@@ -1,7 +1,6 @@
 package mock
 
 import (
-	"bytes"
 	"fmt"
 	"go/ast"
 	"io"
@@ -11,11 +10,12 @@ import (
 )
 
 type MockedObject struct {
+
+	fileName string
+	importDecls string
 	interfaceDecls string
 	structDecls    string
 	functionDecls  string
-
-	buffer bytes.Buffer
 }
 
 var builtinTypes = map[string]bool{
@@ -185,22 +185,27 @@ func genList(list *ast.FieldList, addNames bool) ([]string, []string, []string) 
 
 func WriteExportedContent(f FileInfo) {
 
+	mockObj := InitMockedObject(f.filePath)
+
 	ast.Inspect(f.fileContent, func(n ast.Node) bool {
 
 		switch nType := n.(type) {
 
 		case *ast.FuncDecl:
 			if nType.Name.IsExported() {
-				GenerateFuncCode(nType)
+				mockObj.GenerateFuncCode(nType)
 			}
 		case *ast.InterfaceType:
-			//GenerateInterfaceCode(nType)
+			//mockObj.GenerateInterfaceCode(nType)
 		}
 		return true
 	})
+
+	mockObj.writeToFile() 
+
 }
 
-func GenerateFuncCode(funcType *ast.FuncDecl) {
+func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 	ftype := funcType.Type
 	objectName, _, object := genList(funcType.Recv, true)
 	_, _, params := genList(ftype.Params, true)
@@ -220,6 +225,7 @@ func GenerateFuncCode(funcType *ast.FuncDecl) {
 
 	toWrite = fmt.Sprintf("%s for i := 0; i < len(mockedData); i++ {\n elem := mockedData[i]\n inp := elem.Input\n outp := elem.Output\n", toWrite)
 	result := ""
+	reflectNum := 0
 	for i := 0; i < len(params); i++ {
 		if i > 0 {
 			result = result + " && "
@@ -229,8 +235,8 @@ func GenerateFuncCode(funcType *ast.FuncDecl) {
 		if isBuiltin {
 			result = fmt.Sprintf("%s (%s == inp.%s)", result, param[0], param[0])
 		} else {
-
 			result = fmt.Sprintf("%s reflect.DeepEqual(%s,inp.%s)", result, param[0], param[0])
+			reflectNum++
 		}
 	}
 
@@ -268,8 +274,8 @@ func GenerateFuncCode(funcType *ast.FuncDecl) {
 
 	toWrite = toWrite + "}"
 
-
-
+	m.functionDecls = fmt.Sprintf("%s\n%s", m.functionDecls, toWrite)
+	/*
 	fmt.Println("\n\n")
 	fmt.Println(string(toWrite))
 	filename := "mock1.txt"
@@ -287,38 +293,35 @@ func GenerateFuncCode(funcType *ast.FuncDecl) {
 	if err != nil {
 		fmt.Println(n, err)
 	}
-
+	
 	file.Close()
+	*/
 }
 
-/*
-
-func CreateMockFile(intrface InterfaceData) error {
-
-	//fileName := fmt.Sprintf("%s.go", intrface.interfaceName)
-	fmt.Println("Inside createMockfile")
-	mockObj := InitMockedObject()
-	dirName := filepath.Dir(intrface.file.filePath)
-
-	mockObj.writeToBuffer(fmt.Sprintf("package %s\n\n", dirName))
-	mockObj.writeToBuffer(fmt.Sprintf("import (\n\t \"fmt\"\n\t)\n\n"))
-	//fmt.Printf("Hello------------%s", mockObj.buffer)
-
-	return nil
-
+func InitMockedObject(fileName string) *MockedObject {
+	return &MockedObject{
+		fileName : fileName, 
+	}
 }
 
-func InitMockedObject() *MockedObject {
-	return &MockedObject{}
-}
+func (m *MockedObject) writeToFile() {
 
-func (m *MockedObject) writeToBuffer(str string) {
-
-	_, err := m.buffer.WriteString(str)
+	toWrite := fmt.Sprintf("%s\n%s\n%s\n%s", m.importDecls, m.interfaceDecls, m.structDecls, m.functionDecls)
+	fileName := strings.Replace(m.fileName, ".go", "_mock.go", 1)
+	
+	file, err := os.Create(fileName)
 
 	if err != nil {
-		fmt.Println("error writing string:", str)
+		fmt.Println("Error creating file: ", err)
 	}
 
+	_, err = io.WriteString(file, toWrite)
+
+	if err != nil {
+		fmt.Println("Error writing file: ", err)
+	}
+
+	file.Close()
+
 }
-*/
+
