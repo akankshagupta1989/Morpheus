@@ -1,7 +1,8 @@
-package mock
+package Morpheus
 
 import (
 	"encoding/json"
+	"bufio"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -13,6 +14,8 @@ import (
 )
 
 type FileInfo struct {
+	lines []string
+	fset *token.FileSet
 	fileContent *ast.File
 	filePath    string
 }
@@ -33,8 +36,17 @@ func (f *FileInfo) FileParser(filePath string) {
 		return
 	}
 
+	lines, err := readLines(filePath)
+
+	if err != nil {
+		fmt.Println("Error in parsing file line by line", err)
+		return
+	}
+
 	f.fileContent = fileContent
 	f.filePath = filePath
+	f.fset = fset
+	f.lines = lines
 	/*
 		ast.Inspect(fileContent, func(n ast.Node) bool {
 			var s string
@@ -131,6 +143,22 @@ func PreMockChecking(inputJsonPath, packagePath string) []FileInfo {
 	return fileInfoArr
 
 }
+
+func readLines(path string) ([]string, error) {
+  file, err := os.Open(path)
+  if err != nil {
+    return nil, err
+  }
+  defer file.Close()
+
+  var lines []string
+  scanner := bufio.NewScanner(file)
+  for scanner.Scan() {
+    lines = append(lines, scanner.Text())
+  }
+  return lines, scanner.Err()
+}
+
 
 func ParseJson(inputJsonPath string) map[string]([]interface{}) {
 

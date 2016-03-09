@@ -1,8 +1,9 @@
-package mock
+package Morpheus
 
 import (
 	"fmt"
 	"go/ast"
+	"go/token"
 	"io"
 	"os"
 	"strings"
@@ -77,7 +78,6 @@ func typeFieldList(fl *ast.FieldList, optParen bool) string {
 
 func typeString(typ ast.Expr) string {
 
-	fmt.Println("inside func typeString")
 	switch specific := typ.(type) {
 
 	case *ast.Ident:
@@ -195,14 +195,56 @@ func WriteExportedContent(f FileInfo) {
 			if nType.Name.IsExported() {
 				mockObj.GenerateFuncCode(nType)
 			}
-		case *ast.InterfaceType:
-			//mockObj.GenerateInterfaceCode(nType)
+			
+		case *ast.GenDecl:
+
+			for _, spec := range nType.Specs {
+				typespec, ok := spec.(*ast.TypeSpec)
+				if ok {
+					_, ok := typespec.Type.(*ast.InterfaceType)
+					if ok {
+						mockObj.GenerateInterfaceCode(nType, f.fset, f.lines, typespec.Name.Name)
+					}
+
+					_, ok = typespec.Type.(*ast.StructType)
+					if ok {
+						mockObj.GenerateStructCode(nType, f.fset, f.lines, typespec.Name.Name)
+					}
+				}
+			}
 		}
 		return true
 	})
 
 	mockObj.writeToFile() 
 
+}
+
+func (m *MockedObject) GenerateStructCode(structType *ast.GenDecl, fset *token.FileSet, lines []string, name string) {
+	
+	startToken := structType.Pos()
+	endToken := structType.End()
+	startLine := fset.File(startToken).Line(startToken)
+	endLine := fset.File(endToken).Line(endToken)
+	toWrite := lines[startLine : endLine]
+	var str string
+	if len(toWrite) > 0 {
+		str = fmt.Sprintf("type struct %s { \n %s \n } \n", name, toWrite)
+	}
+	m.structDecls = str
+}
+
+func (m *MockedObject) GenerateInterfaceCode(interfaceType *ast.GenDecl, fset *token.FileSet, lines []string, name string) {
+	startToken := interfaceType.Pos()
+	endToken := interfaceType.End()
+	startLine := fset.File(startToken).Line(startToken)
+	endLine := fset.File(endToken).Line(endToken)
+	toWrite := lines[startLine : endLine]
+	var str string
+	if len(toWrite) > 0 {
+		str = fmt.Sprintf("type interface %s { \n %s \n } \n", name, toWrite)
+	}
+	m.interfaceDecls = str
 }
 
 func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
@@ -275,27 +317,7 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 	toWrite = toWrite + "}"
 
 	m.functionDecls = fmt.Sprintf("%s\n%s", m.functionDecls, toWrite)
-	/*
-	fmt.Println("\n\n")
-	fmt.Println(string(toWrite))
-	filename := "mock1.txt"
 
-	file, err := os.Create(filename)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Println(" Write to file : " + filename)
-
-	n, err := io.WriteString(file, toWrite)
-
-	if err != nil {
-		fmt.Println(n, err)
-	}
-	
-	file.Close()
-	*/
 }
 
 func InitMockedObject(fileName string) *MockedObject {
