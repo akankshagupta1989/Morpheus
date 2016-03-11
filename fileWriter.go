@@ -19,7 +19,10 @@ type MockedObject struct {
 	functionDecls  string
 }
 
-var builtinTypes = map[string]bool{
+var toImport = map[string]int{}
+var reflectNum int
+
+var builtinTypes = map[string]bool {
 	"ComplexType": true,
 	"FloatType":   true,
 	"IntegerType": true,
@@ -186,6 +189,7 @@ func genList(list *ast.FieldList, addNames bool) ([]string, []string, []string) 
 func WriteExportedContent(f FileInfo) {
 
 	mockObj := InitMockedObject(f.filePath)
+	importArr := make([][]string, 0)
 
 	ast.Inspect(f.fileContent, func(n ast.Node) bool {
 
@@ -195,9 +199,9 @@ func WriteExportedContent(f FileInfo) {
 			if nType.Name.IsExported() {
 				mockObj.GenerateFuncCode(nType)
 			}
-			
-		case *ast.GenDecl:
 
+		case *ast.GenDecl:
+			
 			for _, spec := range nType.Specs {
 				typespec, ok := spec.(*ast.TypeSpec)
 				if ok {
@@ -211,13 +215,50 @@ func WriteExportedContent(f FileInfo) {
 						mockObj.GenerateStructCode(nType, f.fset, f.lines, typespec.Name.Name)
 					}
 				}
+				importSpec, ok := spec.(*ast.ImportSpec)
+				if ok {
+					import0 := make([]string, 2)
+					import0[0] = importSpec.Path.Value
+					if importSpec.Name != nil && importSpec.Name.Name != "" {
+						import0[1] = importSpec.Name.Name
+					} else {
+						import0[1] = ""
+					}
+
+					importArr = append(importArr, import0)
+				}
 			}
 		}
 		return true
 	})
 
+	mockObj.GenerateImportCode(importArr)
 	mockObj.writeToFile() 
 
+}
+
+func (m* MockedObject) GenerateImportCode(importArr [][]string) {
+
+	toWrite := fmt.Sprintf("import ( \n \"fmt\"\n")
+	if reflectNum > 0 {
+		toWrite = fmt.Sprintf("%s \"reflect\"\n", toWrite)
+	}
+	
+	for importUsed, _ := range toImport {
+		for _, importX := range importArr { 
+			if strings.HasSuffix(importX[0], "\\" + importUsed) {
+				toWrite = fmt.Sprintf("%s %s", toWrite, importX[0])
+			} else if importX[1] == importUsed {
+					toWrite = fmt.Sprintf("%s %s %s", toWrite, importX[1], importX[0])
+			}
+		}
+	}
+
+	if len(toWrite) > 0 {
+		toWrite = fmt.Sprintf("%s \n)\n", toWrite)
+	}
+	
+	m.importDecls = toWrite
 }
 
 func (m *MockedObject) GenerateStructCode(structType *ast.GenDecl, fset *token.FileSet, lines []string, name string) {
@@ -231,7 +272,7 @@ func (m *MockedObject) GenerateStructCode(structType *ast.GenDecl, fset *token.F
 	if len(toWrite) > 0 {
 		str = fmt.Sprintf("type struct %s { \n %s \n } \n", name, toWrite)
 	}
-	m.structDecls = str
+	m.structDecls += str
 }
 
 func (m *MockedObject) GenerateInterfaceCode(interfaceType *ast.GenDecl, fset *token.FileSet, lines []string, name string) {
@@ -244,19 +285,25 @@ func (m *MockedObject) GenerateInterfaceCode(interfaceType *ast.GenDecl, fset *t
 	if len(toWrite) > 0 {
 		str = fmt.Sprintf("type interface %s { \n %s \n } \n", name, toWrite)
 	}
-	m.interfaceDecls = str
+	m.interfaceDecls += str
 }
 
 func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 	ftype := funcType.Type
 	objectName, _, object := genList(funcType.Recv, true)
-	_, _, params := genList(ftype.Params, true)
+	_, paramTypes, params := genList(ftype.Params, true)
 	_, returntypes, _ := genList(ftype.Results, false)
+
+	for _, paramType := range paramTypes {
+		if strings.Contains(paramType, ".") {
+			imp := strings.Split(paramType, ".")
+			toImport[imp[0]] = 1
+		}
+	}
 
 	toWrite := "func"
 	if len(objectName) > 0 {
 		toWrite = fmt.Sprintf("%s (%s) ", toWrite, string(object[0])) //writing object on which func is defined
-		fmt.Println("toWrite", toWrite)
 	}
 	parameters := strings.Join(params, ", ")       // func params
 	returnTypes := strings.Join(returntypes, ", ") // func return types
@@ -264,10 +311,9 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 	toWrite = fmt.Sprintf("%s jsonData := ServicesMap[\"%s\"]\n", toWrite, funcType.Name.Name)
 	toWrite = fmt.Sprintf("%s mockedData := make([]%s, 0)\n", toWrite, funcType.Name.Name)
 	toWrite = fmt.Sprintf("%s if err := json.Unmarshal(jsonData, mockedData) ; err != nil {\nfmt.Println(\"Error unmarshalling input json data: func %s\")\n}\n", toWrite, funcType.Name.Name)
-
 	toWrite = fmt.Sprintf("%s for i := 0; i < len(mockedData); i++ {\n elem := mockedData[i]\n inp := elem.Input\n outp := elem.Output\n", toWrite)
 	result := ""
-	reflectNum := 0
+
 	for i := 0; i < len(params); i++ {
 		if i > 0 {
 			result = result + " && "
