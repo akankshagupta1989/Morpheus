@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"strings"
-	//"path/filepath"
 )
 
 type MockedObject struct {
@@ -257,7 +256,7 @@ func (m* MockedObject) GenerateImportCode(importArr [][]string) {
 	if len(toWrite) > 0 {
 		toWrite = fmt.Sprintf("%s \n)\n", toWrite)
 	}
-	
+
 	m.importDecls = toWrite
 }
 
@@ -267,28 +266,31 @@ func (m *MockedObject) GenerateStructCode(structType *ast.GenDecl, fset *token.F
 	endToken := structType.End()
 	startLine := fset.File(startToken).Line(startToken)
 	endLine := fset.File(endToken).Line(endToken)
-	toWrite := lines[startLine : endLine]
-	var str string
+	toWrite := lines[startLine : endLine-1]
+	
 	if len(toWrite) > 0 {
-		str = fmt.Sprintf("type struct %s { \n %s \n } \n", name, toWrite)
+		str := fmt.Sprintf("type %s struct { \n %s \n } \n", name, strings.Join(toWrite, ""))
+		m.structDecls += str
 	}
-	m.structDecls += str
 }
 
 func (m *MockedObject) GenerateInterfaceCode(interfaceType *ast.GenDecl, fset *token.FileSet, lines []string, name string) {
+	
 	startToken := interfaceType.Pos()
 	endToken := interfaceType.End()
 	startLine := fset.File(startToken).Line(startToken)
 	endLine := fset.File(endToken).Line(endToken)
-	toWrite := lines[startLine : endLine]
-	var str string
+	toWrite := lines[startLine : endLine-1]
+
 	if len(toWrite) > 0 {
-		str = fmt.Sprintf("type interface %s { \n %s \n } \n", name, toWrite)
+		str := fmt.Sprintf("type %s interface { \n %s \n } \n", name, strings.Join(toWrite, "\n"))
+		m.interfaceDecls += str
 	}
-	m.interfaceDecls += str
+	
 }
 
 func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
+	
 	ftype := funcType.Type
 	objectName, _, object := genList(funcType.Recv, true)
 	_, paramTypes, params := genList(ftype.Params, true)
@@ -356,7 +358,7 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 		returnVars = append(returnVars, fmt.Sprintf("return%d", i))
 	}
 
-	toReturn := "(" + strings.Join(returnVars, ", ") + ")"
+	toReturn := strings.Join(returnVars, ", ")
 
 	toWrite = fmt.Sprintf("%s\n return %s\n", toWrite, toReturn)
 
