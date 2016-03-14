@@ -1,8 +1,9 @@
 package main
 
 import (
+		"flag"
 		"fmt"
-		"mock"
+		"github.com/akankshagupta1989/Morpheus/mock"
 )
 
 func main() {
