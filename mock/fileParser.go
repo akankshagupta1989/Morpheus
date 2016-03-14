@@ -103,8 +103,9 @@ func parsePackageFiles(dirPath string) []FileInfo {
 		fileName := f.Name()
 
 		if strings.HasSuffix(fileName, ".go") {
-
-			fR := NewFileInfo(filepath.Base(dirPath))
+			dirName := filepath.Base(dirPath)
+			fmt.Println("dirname", dirName)
+			fR := NewFileInfo(dirName)
 			fullFilePath := dirPath + fileName
 			fR.FileParser(fullFilePath)
 			fileInfoArr = append(fileInfoArr, *fR)
