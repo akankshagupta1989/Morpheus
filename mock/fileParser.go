@@ -13,15 +13,18 @@ import (
 )
 
 type FileInfo struct {
+	parentDir string
 	lines []string
 	fset *token.FileSet
 	fileContent *ast.File
 	filePath    string
 }
 
-func NewFileInfo() *FileInfo {
+func NewFileInfo(parent string) *FileInfo {
 
-	return &FileInfo{}
+	return &FileInfo{
+		parentDir : parent
+	}
 }
 
 func (f *FileInfo) FileParser(filePath string) {
@@ -100,7 +103,7 @@ func parsePackageFiles(dirPath string) []FileInfo {
 
 		if strings.HasSuffix(fileName, ".go") {
 
-			fR := NewFileInfo()
+			fR := NewFileInfo(filepath.Dir(dirPath))
 			fullFilePath := dirPath + fileName
 			fR.FileParser(fullFilePath)
 			fileInfoArr = append(fileInfoArr, *fR)

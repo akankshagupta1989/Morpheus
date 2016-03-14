@@ -232,7 +232,7 @@ func WriteExportedContent(f FileInfo) {
 	})
 
 	mockObj.GenerateImportCode(importArr)
-	mockObj.writeToFile() 
+	mockObj.writeToFile(f.parentDir) 
 
 }
 
@@ -394,9 +394,10 @@ func InitMockedObject(fileName string) *MockedObject {
 	}
 }
 
-func (m *MockedObject) writeToFile() {
+func (m *MockedObject) writeToFile(packageName string) {
 
-	toWrite := fmt.Sprintf("%s\n%s\n%s\n%s", m.importDecls, m.interfaceDecls, m.structDecls, m.functionDecls)
+	tagname := fmt.Sprintf("// +build %smock\n", packageName)
+	toWrite := fmt.Sprintf("%s\n%s\n%s\n%s\n%s\n%s",tagName, packageName, m.importDecls, m.interfaceDecls, m.structDecls, m.functionDecls)
 	fileName := strings.Replace(m.fileName, ".go", "_mock.go", 1)
 	
 	file, err := os.Create(fileName)
