@@ -397,7 +397,7 @@ func InitMockedObject(fileName string) *MockedObject {
 func (m *MockedObject) writeToFile(packageName string) {
 
 	tagName := fmt.Sprintf("// +build %smock\n", packageName)
-	toWrite := fmt.Sprintf("%s\n%s\n%s\n%s\n%s\n%s",tagName, packageName, m.importDecls, m.interfaceDecls, m.structDecls, m.functionDecls)
+	toWrite := fmt.Sprintf("%s\npackage %s\n%s\n%s\n%s\n%s",tagName, packageName, m.importDecls, m.interfaceDecls, m.structDecls, m.functionDecls)
 	fileName := strings.Replace(m.fileName, ".go", "_mock.go", 1)
 	
 	file, err := os.Create(fileName)
