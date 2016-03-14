@@ -1,4 +1,4 @@
-package Morpheus
+package mock
 
 import (
 	"encoding/json"
