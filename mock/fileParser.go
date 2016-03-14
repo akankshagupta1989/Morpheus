@@ -23,7 +23,7 @@ type FileInfo struct {
 func NewFileInfo(parent string) *FileInfo {
 
 	return &FileInfo{
-		parentDir : parent
+		parentDir : parent,
 	}
 }
 
