@@ -9,7 +9,6 @@ import (
 	"go/token"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -91,7 +90,6 @@ func (f *FileInfo) GetExportedFunctions(exportedFuncMap map[string]int) {
 
 func parsePackageFiles(dirPath string) []FileInfo {
 
-	//fullDirPath, _ := filepath.Abs(dirPath)
 	files, _ := ioutil.ReadDir(dirPath)
 
 	fileInfoArr := make([]FileInfo, 0)
