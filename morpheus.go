@@ -4,6 +4,7 @@ import (
 		"flag"
 		"fmt"
 		"github.com/akankshagupta1989/Morpheus/mock"
+		"os"
 )
 
 func main() {
@@ -14,6 +15,7 @@ func main() {
 	if len(args) != 2 {
 		//usage()
 		fmt.Println("command not in correct format: check usage")
+		os.Exit(1)
 	}
 
 	fileinfo := mock.PreMockChecking(args[0], args[1])

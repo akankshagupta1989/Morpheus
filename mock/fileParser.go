@@ -91,8 +91,8 @@ func (f *FileInfo) GetExportedFunctions(exportedFuncMap map[string]int) {
 
 func parsePackageFiles(dirPath string) []FileInfo {
 
-	fullDirPath, _ := filepath.Abs(dirPath)
-	files, _ := ioutil.ReadDir(fullDirPath)
+	//fullDirPath, _ := filepath.Abs(dirPath)
+	files, _ := ioutil.ReadDir(dirPath)
 
 	fileInfoArr := make([]FileInfo, 0)
 
@@ -103,7 +103,7 @@ func parsePackageFiles(dirPath string) []FileInfo {
 		if strings.HasSuffix(fileName, ".go") {
 
 			fR := NewFileInfo()
-			fullFilePath, _ := filepath.Abs(fileName)
+			fullFilePath := dirPath + fileName
 			fR.FileParser(fullFilePath)
 			fileInfoArr = append(fileInfoArr, *fR)
 		}
