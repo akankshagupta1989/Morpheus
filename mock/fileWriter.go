@@ -418,10 +418,10 @@ func (m *MockedObject) writeToFile(packageName string) {
 
 func runFmt(fileName string) {
 
-	cmd := exec.Command("go fmt", fileName)
+	cmd := exec.Command("gofmt -w", fileName)
 	err := cmd.Start()
 	if err != nil {
-		fmt.Println("Error executing go fmt", err)
+		fmt.Println("Error executing gofmt", err)
 	}
 	
 	err = cmd.Wait()
