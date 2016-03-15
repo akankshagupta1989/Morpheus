@@ -424,7 +424,7 @@ func runFmt(fileName string) {
 		fmt.Println(path)
 		return
 	}
-
+	fmt.Println("PATH is", path)
 	cmd := exec.Command("gofmt -w", fileName)
 	err = cmd.Start()
 	if err != nil {
