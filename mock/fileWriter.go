@@ -420,7 +420,7 @@ func runFmt(fileName string) {
 
 	path, err := exec.LookPath("gofmt")
 	if err != nil {
-		fmt.Println("Skipping... gofmt not present in Path")
+		fmt.Println("Skipping... gofmt not present in Path:", path)
 		return
 	}
 
