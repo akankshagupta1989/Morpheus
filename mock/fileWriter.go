@@ -418,14 +418,13 @@ func (m *MockedObject) writeToFile(packageName string) {
 
 func runFmt(fileName string) {
 
-	path, err := exec.LookPath("go fmt")
+	path, err := exec.LookPath("gofmt")
 	if err != nil {
 		fmt.Println("Skipping... gofmt not present in Path")
-		fmt.Println(path)
 		return
 	}
-	fmt.Println("PATH is", path)
-	cmd := exec.Command("go fmt", fileName)
+
+	cmd := exec.Command("gofmt", "-w", fileName)
 	err = cmd.Start()
 	if err != nil {
 		fmt.Println("Error executing gofmt", err)
