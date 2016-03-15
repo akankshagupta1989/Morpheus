@@ -245,11 +245,12 @@ func (m *MockedObject) GenerateImportCode(importArr [][]string) {
 		for _, importX := range importArr {
 
 			toSearchImportPkg := fmt.Sprintf("/%s\"", importUsed)
-			if strings.HasSuffix(importX[0], toSearchImportPkg) {
-				toWrite = fmt.Sprintf("%s %s", toWrite, importX[0])
-			} else if importX[1] == importUsed {
-				toWrite = fmt.Sprintf("%s %s %s", toWrite, importX[1], importX[0])
-			}
+
+			if importX[1] == importUsed {
+				toWrite = fmt.Sprintf("%s %s %s\n", toWrite, importX[1], importX[0])
+			} else if strings.HasSuffix(importX[0], toSearchImportPkg) {
+				toWrite = fmt.Sprintf("%s %s\n", toWrite, importX[0])
+			} 
 		}
 	}
 
