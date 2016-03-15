@@ -250,7 +250,7 @@ func (m *MockedObject) GenerateImportCode(importArr [][]string) {
 				toWrite = fmt.Sprintf("%s %s %s\n", toWrite, importX[1], importX[0])
 			} else if strings.HasSuffix(importX[0], toSearchImportPkg) {
 				toWrite = fmt.Sprintf("%s %s\n", toWrite, importX[0])
-			} else {
+			} else if importX[0] == importUsed {
 				toWrite = fmt.Sprintf("%s %s\n", toWrite, importUsed)
 			}
 		}
