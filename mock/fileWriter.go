@@ -243,7 +243,7 @@ func (m* MockedObject) GenerateImportCode(importArr [][]string) {
 	
 	for importUsed, _ := range m.toImport {
 		for _, importX := range importArr { 
-			if strings.HasSuffix(importX[0], "\\" + importUsed) {
+			if strings.HasSuffix(importX[0], "/" + importUsed) {
 				toWrite = fmt.Sprintf("%s %s", toWrite, importX[0])
 			} else if importX[1] == importUsed {
 					toWrite = fmt.Sprintf("%s %s %s", toWrite, importX[1], importX[0])
