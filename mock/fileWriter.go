@@ -11,16 +11,16 @@ import (
 )
 
 type MockedObject struct {
-	reflectNum int
-	toImport map[string]int
-	fileName string
-	importDecls string
+	reflectNum     int
+	toImport       map[string]int
+	fileName       string
+	importDecls    string
 	interfaceDecls string
 	structDecls    string
 	functionDecls  string
 }
 
-var builtinTypes = map[string]bool {
+var builtinTypes = map[string]bool{
 	"ComplexType": true,
 	"FloatType":   true,
 	"IntegerType": true,
@@ -49,7 +49,7 @@ var builtinTypes = map[string]bool {
 }
 
 func typeFieldList(fl *ast.FieldList, optParen bool) string {
-	
+
 	var list []string
 
 	if fl == nil {
@@ -199,7 +199,7 @@ func WriteExportedContent(f FileInfo) {
 			}
 
 		case *ast.GenDecl:
-			
+
 			for _, spec := range nType.Specs {
 				typespec, ok := spec.(*ast.TypeSpec)
 				if ok {
@@ -231,22 +231,24 @@ func WriteExportedContent(f FileInfo) {
 	})
 
 	mockObj.GenerateImportCode(importArr)
-	mockObj.writeToFile(f.parentDir) 
+	mockObj.writeToFile(f.parentDir)
 }
 
-func (m* MockedObject) GenerateImportCode(importArr [][]string) {
+func (m *MockedObject) GenerateImportCode(importArr [][]string) {
 
 	toWrite := fmt.Sprintf("import ( \n \"fmt\"\n")
 	if m.reflectNum > 0 {
 		toWrite = fmt.Sprintf("%s \"reflect\"\n", toWrite)
 	}
-	
+
 	for importUsed, _ := range m.toImport {
-		for _, importX := range importArr { 
-			if strings.HasSuffix(importX[0], "/" + importUsed) {
+		for _, importX := range importArr {
+
+			toSearchImportPkg := fmt.Sprintf("/%s\"", importUsed)
+			if strings.HasSuffix(importX[0], toSearchImportPkg) {
 				toWrite = fmt.Sprintf("%s %s", toWrite, importX[0])
 			} else if importX[1] == importUsed {
-					toWrite = fmt.Sprintf("%s %s %s", toWrite, importX[1], importX[0])
+				toWrite = fmt.Sprintf("%s %s %s", toWrite, importX[1], importX[0])
 			}
 		}
 	}
@@ -259,13 +261,13 @@ func (m* MockedObject) GenerateImportCode(importArr [][]string) {
 }
 
 func (m *MockedObject) GenerateStructCode(structType *ast.GenDecl, fset *token.FileSet, lines []string, name string) {
-	
+
 	startToken := structType.Pos()
 	endToken := structType.End()
 	startLine := fset.File(startToken).Line(startToken)
 	endLine := fset.File(endToken).Line(endToken)
 	toWrite := lines[startLine : endLine-1]
-	
+
 	if len(toWrite) > 0 {
 		str := fmt.Sprintf("type %s struct { \n %s \n } \n", name, strings.Join(toWrite, "\n"))
 		m.structDecls += str
@@ -273,7 +275,7 @@ func (m *MockedObject) GenerateStructCode(structType *ast.GenDecl, fset *token.F
 }
 
 func (m *MockedObject) GenerateInterfaceCode(interfaceType *ast.GenDecl, fset *token.FileSet, lines []string, name string) {
-	
+
 	startToken := interfaceType.Pos()
 	endToken := interfaceType.End()
 	startLine := fset.File(startToken).Line(startToken)
@@ -284,11 +286,11 @@ func (m *MockedObject) GenerateInterfaceCode(interfaceType *ast.GenDecl, fset *t
 		str := fmt.Sprintf("type %s interface { \n %s \n } \n", name, strings.Join(toWrite, "\n"))
 		m.interfaceDecls += str
 	}
-	
+
 }
 
 func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
-	
+
 	ftype := funcType.Type
 	objectName, _, object := genList(funcType.Recv, true)
 	_, paramTypes, params := genList(ftype.Params, true)
@@ -375,9 +377,9 @@ func GenerateFunctionStruct(funcName string, params, returntypes []string) strin
 	toWrite = fmt.Sprintf("%s Input struct { \n %s \n} \n", toWrite, strings.Join(params, "\n"))
 
 	returnVarsInStruct := ""
-	for i := 0 ; i < len(returntypes) ; i++ {
+	for i := 0; i < len(returntypes); i++ {
 		returnVarsInStruct = fmt.Sprintf("%s return%d %s\n", returnVarsInStruct, i, returntypes[i])
-	} 
+	}
 	if len(returntypes) > 0 {
 		toWrite = fmt.Sprintf("%s Output struct { \n %s }\n", toWrite, returnVarsInStruct)
 	}
@@ -388,17 +390,17 @@ func GenerateFunctionStruct(funcName string, params, returntypes []string) strin
 
 func InitMockedObject(fileName string) *MockedObject {
 	return &MockedObject{
-		fileName : fileName, 
-		toImport : make(map[string]int),
+		fileName: fileName,
+		toImport: make(map[string]int),
 	}
 }
 
 func (m *MockedObject) writeToFile(packageName string) {
 
 	tagName := fmt.Sprintf("// +build %smock\n", packageName)
-	toWrite := fmt.Sprintf("%s\npackage %s\n%s\n%s\n%s\n%s",tagName, packageName, m.importDecls, m.interfaceDecls, m.structDecls, m.functionDecls)
+	toWrite := fmt.Sprintf("%s\npackage %s\n%s\n%s\n%s\n%s", tagName, packageName, m.importDecls, m.interfaceDecls, m.structDecls, m.functionDecls)
 	fileName := strings.Replace(m.fileName, ".go", "_mock.go", 1)
-	
+
 	file, err := os.Create(fileName)
 
 	if err != nil {
@@ -428,10 +430,9 @@ func runFmt(fileName string) {
 	if err != nil {
 		fmt.Println("Error executing gofmt", err)
 	}
-	
+
 	err = cmd.Wait()
 	if err != nil {
 		fmt.Println("Error executing go fmt on file", fileName, err)
 	}
 }
-

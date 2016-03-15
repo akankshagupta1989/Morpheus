@@ -1,8 +1,8 @@
 package mock
 
 import (
-	"encoding/json"
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -14,9 +14,9 @@ import (
 )
 
 type FileInfo struct {
-	parentDir string
-	lines []string
-	fset *token.FileSet
+	parentDir   string
+	lines       []string
+	fset        *token.FileSet
 	fileContent *ast.File
 	filePath    string
 }
@@ -24,7 +24,7 @@ type FileInfo struct {
 func NewFileInfo(parent string) *FileInfo {
 
 	return &FileInfo{
-		parentDir : parent,
+		parentDir: parent,
 	}
 }
 
@@ -148,20 +148,19 @@ func PreMockChecking(inputJsonPath, packagePath string) []FileInfo {
 }
 
 func readLines(path string) ([]string, error) {
-  file, err := os.Open(path)
-  if err != nil {
-    return nil, err
-  }
-  defer file.Close()
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
 
-  var lines []string
-  scanner := bufio.NewScanner(file)
-  for scanner.Scan() {
-    lines = append(lines, scanner.Text())
-  }
-  return lines, scanner.Err()
+	var lines []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines, scanner.Err()
 }
-
 
 func ParseJson(inputJsonPath string) map[string]([]interface{}) {
 
