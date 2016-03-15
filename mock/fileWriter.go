@@ -306,6 +306,13 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 		}
 	}
 
+	for _, returnType := range returntypes {
+		if strings.Contains(returnType, ".") {
+			imp := strings.Split(returnType, ".")
+			m.toImport[imp[0]] = 1
+		}
+	}
+
 	toWrite := "func"
 	if len(objectName) > 0 {
 		toWrite = fmt.Sprintf("%s (%s) ", toWrite, string(object[0])) //writing object on which func is defined
