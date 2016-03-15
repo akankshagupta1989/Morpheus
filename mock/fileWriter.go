@@ -6,6 +6,7 @@ import (
 	"go/token"
 	"io"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -233,7 +234,6 @@ func WriteExportedContent(f FileInfo) {
 
 	mockObj.GenerateImportCode(importArr)
 	mockObj.writeToFile(f.parentDir) 
-
 }
 
 func (m* MockedObject) GenerateImportCode(importArr [][]string) {
@@ -413,6 +413,18 @@ func (m *MockedObject) writeToFile(packageName string) {
 	}
 
 	file.Close()
+	runFmt(fileName)
+}
 
+func runFmt(fileName string) {
+
+	cmd := exec.Command("go fmt", fileName)
+	err := cmd.Start()
+	if err != nil {
+		fmt.Println("Error executing go fmt", err)
+	}
+	
+	err = cmd.Wait()
+	fmt.Println("Error executing go fmt on file", fileName, err)
 }
 
