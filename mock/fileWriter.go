@@ -269,7 +269,7 @@ func (m *MockedObject) GenerateStructCode(structType *ast.GenDecl, fset *token.F
 	toWrite := lines[startLine : endLine-1]
 	
 	if len(toWrite) > 0 {
-		str := fmt.Sprintf("type %s struct { \n %s \n } \n", name, strings.Join(toWrite, ""))
+		str := fmt.Sprintf("type %s struct { \n %s \n } \n", name, strings.Join(toWrite, "\n"))
 		m.structDecls += str
 	}
 }
