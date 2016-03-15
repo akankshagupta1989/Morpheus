@@ -11,16 +11,14 @@ import (
 )
 
 type MockedObject struct {
-
+	reflectNum int
+	toImport map[string]int
 	fileName string
 	importDecls string
 	interfaceDecls string
 	structDecls    string
 	functionDecls  string
 }
-
-var toImport = map[string]int{}
-var reflectNum int
 
 var builtinTypes = map[string]bool {
 	"ComplexType": true,
@@ -239,11 +237,11 @@ func WriteExportedContent(f FileInfo) {
 func (m* MockedObject) GenerateImportCode(importArr [][]string) {
 
 	toWrite := fmt.Sprintf("import ( \n \"fmt\"\n")
-	if reflectNum > 0 {
+	if m.reflectNum > 0 {
 		toWrite = fmt.Sprintf("%s \"reflect\"\n", toWrite)
 	}
 	
-	for importUsed, _ := range toImport {
+	for importUsed, _ := range m.toImport {
 		for _, importX := range importArr { 
 			if strings.HasSuffix(importX[0], "\\" + importUsed) {
 				toWrite = fmt.Sprintf("%s %s", toWrite, importX[0])
@@ -299,7 +297,7 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 	for _, paramType := range paramTypes {
 		if strings.Contains(paramType, ".") {
 			imp := strings.Split(paramType, ".")
-			toImport[imp[0]] = 1
+			m.toImport[imp[0]] = 1
 		}
 	}
 
@@ -326,7 +324,7 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 			result = fmt.Sprintf("%s (%s == inp.%s)", result, param[0], param[0])
 		} else {
 			result = fmt.Sprintf("%s reflect.DeepEqual(%s,inp.%s)", result, param[0], param[0])
-			reflectNum++
+			m.reflectNum++
 		}
 	}
 
@@ -391,6 +389,7 @@ func GenerateFunctionStruct(funcName string, params, returntypes []string) strin
 func InitMockedObject(fileName string) *MockedObject {
 	return &MockedObject{
 		fileName : fileName, 
+		toImport : make(map[string]int),
 	}
 }
 
