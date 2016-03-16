@@ -11,7 +11,6 @@ import (
 )
 
 type MockedObject struct {
-
 	reflectNum     int
 	toImport       map[string]int
 	fileName       string
@@ -304,9 +303,9 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 		if strings.Contains(paramType, ".") {
 			imp := strings.Split(paramType, ".")
 			fmt.Println("before", imp[0])
-			stripSpecialCharsinPrefix(imp[0])
-			fmt.Println("after", imp[0])
-			m.toImport[imp[0]] = 1
+			str := stripSpecialCharsinPrefix(imp[0])
+			fmt.Println("after", str)
+			m.toImport[str] = 1
 		}
 	}
 
@@ -314,9 +313,9 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 		if strings.Contains(returnType, ".") {
 			imp := strings.Split(returnType, ".")
 			fmt.Println("before", imp[0])
-			stripSpecialCharsinPrefix(imp[0])
-			fmt.Println("after", imp[0])
-			m.toImport[imp[0]] = 1
+			str := stripSpecialCharsinPrefix(imp[0])
+			fmt.Println("after", str)
+			m.toImport[str] = 1
 		}
 	}
 
@@ -454,26 +453,30 @@ func runFmt(fileName string) {
 	}
 }
 
-func stripSpecialCharsinPrefix(str string) {
+func stripSpecialCharsinPrefix(str string) string {
 
-	specialChars := map[string]bool {
-		"*" : true,
-		"[" : true,
-		"]" : true,
-		"(" : true,
-		")" : true,
-		" " : true,
+	specialChars := map[string]bool{
+		"*": true,
+		"[": true,
+		"]": true,
+		"(": true,
+		")": true,
+		" ": true,
 	}
 
 	if len(str) > 0 {
+
 		flag := true
+
 		for flag {
-			_, exists := specialChars[string(str[0])] 
+			_, exists := specialChars[string(str[0])]
 			if exists {
 				str = strings.Trim(str, string(str[0]))
 			} else {
-			   flag = false 
+				flag = false
 			}
 		}
 	}
+
+	return str
 }
