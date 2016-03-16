@@ -302,6 +302,7 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 	for _, paramType := range paramTypes {
 		if strings.Contains(paramType, ".") {
 			imp := strings.Split(paramType, ".")
+			stripSpecialCharsinPrefix(imp[0])
 			m.toImport[imp[0]] = 1
 		}
 	}
@@ -309,6 +310,7 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 	for _, returnType := range returntypes {
 		if strings.Contains(returnType, ".") {
 			imp := strings.Split(returnType, ".")
+			stripSpecialCharsinPrefix(imp[0])
 			m.toImport[imp[0]] = 1
 		}
 	}
@@ -444,5 +446,29 @@ func runFmt(fileName string) {
 	err = cmd.Wait()
 	if err != nil {
 		fmt.Println("Error executing go fmt on file", fileName, err)
+	}
+}
+
+func stripSpecialCharsinPrefix(str string) {
+
+	specialChars := map[string]bool{
+		"*": true,
+		"[": true,
+		"]": true,
+		"(": true,
+		")": true,
+		" ": true,
+	}
+
+	if len(str) > 0 {
+		flag := true
+		for flag {
+			_, exists := specialChars[string(str[0])]
+			if exists {
+				strings.Trim(str, string(str[0]))
+			} else {
+				flag = false
+			}
+		}
 	}
 }

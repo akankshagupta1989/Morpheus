@@ -1,10 +1,10 @@
 package main
 
 import (
-		"flag"
-		"fmt"
-		"github.com/akankshagupta1989/Morpheus/mock"
-		"os"
+	"flag"
+	"fmt"
+	"github.com/akankshagupta1989/Morpheus/mock"
+	"os"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 	fileinfo := mock.PreMockChecking(args[0], args[1])
 
 	for _, x := range fileinfo {
-        mock.WriteExportedContent(x)
-    }
+		mock.WriteExportedContent(x)
+	}
 
 }
