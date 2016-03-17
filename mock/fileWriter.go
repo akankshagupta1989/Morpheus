@@ -342,7 +342,7 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 		if isBuiltin {
 			result = fmt.Sprintf("%s (%s == inp.%s)", result, param[0], strings.Title(param[0]))
 		} else {
-			result = fmt.Sprintf("%s reflect.DeepEqual(%s,inp.%s)", result, param[0], param[0])
+			result = fmt.Sprintf("%s reflect.DeepEqual(%s,inp.%s)", result, param[0], strings.Title(param[0]))
 			m.reflectNum++
 		}
 	}
@@ -355,12 +355,12 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 		param := strings.Split(params[i], " ")
 
 		if string(param[1][0]) == "*" {
-			toWrite = fmt.Sprintf("%s *%s = *outp.%s\n", toWrite, string(param[0]), string(param[0]))
+			toWrite = fmt.Sprintf("%s *%s = *outp.%s\n", toWrite, string(param[0]), strings.Title(string(param[0])))
 		}
 	}
 
 	for i := 0; i < len(returntypes); i++ {
-		toWrite = fmt.Sprintf("%s return%d = outp.return%d\n", toWrite, i, i)
+		toWrite = fmt.Sprintf("%s return%d = outp.Return%d\n", toWrite, i, i)
 	}
 
 	toWrite = toWrite + "}\n}"
