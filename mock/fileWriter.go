@@ -236,7 +236,7 @@ func WriteExportedContent(f FileInfo) {
 
 func (m *MockedObject) GenerateImportCode(importArr [][]string) {
 
-	toWrite := fmt.Sprintf("import ( \n \"fmt\"\n")
+	toWrite := fmt.Sprintf("import ( \n \"fmt\"\n\"encoding/json\"\n")
 	if m.reflectNum > 0 {
 		toWrite = fmt.Sprintf("%s \"reflect\"\n", toWrite)
 	}
@@ -329,6 +329,11 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 	toWrite = fmt.Sprintf("%s jsonData := ServicesMap[\"%s\"]\n", toWrite, funcType.Name.Name)
 	toWrite = fmt.Sprintf("%s mockedData := make([]%sStruct, 0)\n", toWrite, funcType.Name.Name)
 	toWrite = fmt.Sprintf("%s if err := json.Unmarshal(jsonData, mockedData) ; err != nil {\nfmt.Println(\"Error unmarshalling input json data: func %s\")\n}\n", toWrite, funcType.Name.Name)
+
+	for i := 0; i < len(returntypes); i++ {
+		toWrite = fmt.Sprintf("%s var return%d %s\n", toWrite, i, string(returntypes[i]))
+	}
+
 	toWrite = fmt.Sprintf("%s for i := 0; i < len(mockedData); i++ {\n elem := mockedData[i]\n inp := elem.Input\n outp := elem.Output\n", toWrite)
 	result := ""
 
@@ -347,10 +352,6 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 	}
 
 	toWrite = fmt.Sprintf("%s result := %s \n", toWrite, result)
-
-	for i := 0; i < len(returntypes); i++ {
-		toWrite = fmt.Sprintf("%s var return%d %s\n", toWrite, i, string(returntypes[i]))
-	}
 
 	toWrite = fmt.Sprintf("%s if result == true {\n", toWrite)
 
@@ -390,12 +391,25 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 func GenerateFunctionStruct(funcName string, params, returntypes []string) string {
 
 	toWrite := fmt.Sprintf("type %s struct {\n", funcName)
-	toWrite = fmt.Sprintf("%s Input struct { \n %s \n} \n", toWrite, strings.Join(params, "\n"))
 
 	returnVarsInStruct := ""
 	for i := 0; i < len(returntypes); i++ {
 		returnVarsInStruct = fmt.Sprintf("%s return%d %s\n", returnVarsInStruct, i, returntypes[i])
 	}
+
+	for i := 0; i < len(params); i++ {
+
+		param := strings.Split(params[i], " ")
+		param[0] = fmt.Sprintf("%s `json:\"%s\"'", strings.Title(param[0]), param[0])
+
+		toWrite = fmt.Sprintf("%s Input struct { \n %s \n} \n", toWrite, strings.Join(params, "\n"))
+
+		if string(param[1][0]) == "*" {
+			returnVarsInStruct = fmt.Sprintf("%s %s %s\n", returnVarsInStruct, param[0], param[1])
+		}
+
+	}
+
 	if len(returntypes) > 0 {
 		toWrite = fmt.Sprintf("%s Output struct { \n %s }\n", toWrite, returnVarsInStruct)
 	}
@@ -467,11 +481,12 @@ func stripSpecialCharsinPrefix(str string) string {
 	if len(str) > 0 {
 
 		flag := true
-
 		for flag {
+
 			_, exists := specialChars[string(str[0])]
 			if exists {
 				str = strings.Trim(str, string(str[0]))
+
 			} else {
 				flag = false
 			}
