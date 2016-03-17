@@ -333,7 +333,7 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 	pointerVarCount := 0
 
 	for _, paramType := range paramTypes {
-		if paramType[0] == "*" {
+		if string(paramType[0]) == "*" {
 			pointerVarCount++
 		}
 	}
