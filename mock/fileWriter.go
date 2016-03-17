@@ -329,11 +329,19 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 	}
 
 	toWrite = fmt.Sprintf("%s for i := 0; i < len(jsonData); i++ {\n elem := jsonData[i]\n inp := elem.Input\n", toWrite)
-	
-	if len(returntypes) > 0 {
-		toWrite =  fmt.Sprintf("%s outp := elem.Output\n", toWrite)
+
+	pointerVarCount := 0
+
+	for _, paramType := range paramTypes {
+		if paramType[0] == "*" {
+			pointerVarCount++
+		}
 	}
-	
+
+	if len(returntypes) > 0 || pointerVarCount > 0 {
+		toWrite = fmt.Sprintf("%s outp := elem.Output\n", toWrite)
+	}
+
 	result := ""
 
 	for i := 0; i < len(params); i++ {
@@ -397,11 +405,14 @@ func GenerateFunctionStruct(funcName string, params, returntypes []string) strin
 	}
 
 	inputVarsInStruct := ""
+	pointerVarCount := 0
+
 	for i := 0; i < len(params); i++ {
 
 		param := strings.Split(params[i], " ")
 
 		if string(param[1][0]) == "*" {
+			pointerVarCount++
 			returnVarsInStruct = fmt.Sprintf("%s %s %s `json:\"%s\"`\n", returnVarsInStruct, strings.Title(param[0]), param[1], param[0])
 		}
 
@@ -411,9 +422,10 @@ func GenerateFunctionStruct(funcName string, params, returntypes []string) strin
 
 	toWrite = fmt.Sprintf("%s Input struct { \n %s \n} \n", toWrite, inputVarsInStruct)
 
-	if len(returntypes) > 0 {
+	if len(returntypes) > 0 || pointerVarCount > 0 {
 		toWrite = fmt.Sprintf("%s Output struct { \n %s }\n", toWrite, returnVarsInStruct)
 	}
+
 	toWrite = fmt.Sprintf("%s } \n", toWrite)
 
 	return toWrite
