@@ -328,7 +328,12 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 		toWrite = fmt.Sprintf("%s var return%d %s\n", toWrite, i, string(returntypes[i]))
 	}
 
-	toWrite = fmt.Sprintf("%s for i := 0; i < len(jsonData); i++ {\n elem := jsonData[i]\n inp := elem.Input\n outp := elem.Output\n", toWrite)
+	toWrite = fmt.Sprintf("%s for i := 0; i < len(jsonData); i++ {\n elem := jsonData[i]\n inp := elem.Input\n", toWrite)
+	
+	if len(returntypes) > 0 {
+		toWrite =  fmt.Sprintf("%s outp := elem.Output\n", toWrite)
+	}
+	
 	result := ""
 
 	for i := 0; i < len(params); i++ {
