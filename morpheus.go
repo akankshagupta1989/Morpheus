@@ -20,6 +20,8 @@ func main() {
 
 	fileinfo := mock.PreMockChecking(args[0], args[1])
 
+	mock.GenerateCodeForParsingJson(args[0], args[1])
+
 	for _, x := range fileinfo {
 		mock.WriteExportedContent(x)
 	}

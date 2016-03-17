@@ -7,6 +7,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -151,15 +152,16 @@ func GenerateCodeForParsingJson(jsonPath, dirPath string) {
 
 	packageName := filepath.Base(dirPath)
 	tagName := fmt.Sprintf("// +build %smock\n", packageName)
-	toWrite := fmt.Sprintf("%s\npackage%s\nimport (\n\"fmt\"\n)\n", tagName, packageName)
-	toWrite := fmt.Sprintf("%svar ServicesMap = map[string]interface{}\n", toWrite)
+	toWrite := fmt.Sprintf("%s\npackage%s\nimport (\n\"fmt\"\n\"encoding/json\"\n\"io/ioutil\")\n", tagName, packageName)
+	toWrite = fmt.Sprintf("%svar ServicesMap = map[string]interface{}\n", toWrite)
 	toWrite = fmt.Sprintf("%sfunc init() {\nfile, err := ioutil.ReadFile(%s)\n", toWrite, jsonPath)
 	toWrite = fmt.Sprintf("%sif err!= nil {\nfmt.Println(\"func init: Error reading input json file\",err)\nos.Exit(1)\n}\n", toWrite)
 	toWrite = fmt.Sprintf("%serr = json.Unmarshal([]byte(file), &servicesMap)\n", toWrite)
 	toWrite = fmt.Sprintf("%sif err != nil {\nfmt.Println(\"func init: Unmarshalling error, input json not in correct format\",err)\n os.Exit(1)\n}\n", toWrite)
 	toWrite = fmt.Sprintf("%s}", toWrite)
 
-	file, err := os.Create(fmt.Sprintf("%s/mock_init.go", filePath.Dir(dirPath)))
+	fileName := fmt.Sprintf("%s/mock_init.go", filepath.Dir(dirPath))
+	file, err := os.Create(fileName)
 
 	if err != nil {
 		fmt.Println("Error creating file: ", err)
