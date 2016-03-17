@@ -322,15 +322,13 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 	parameters := strings.Join(params, ", ")       // func params
 	returnTypes := strings.Join(returntypes, ", ") // func return types
 	toWrite = fmt.Sprintf("%s %s (%s) (%s) {\n", toWrite, funcType.Name.Name, parameters, returnTypes)
-	toWrite = fmt.Sprintf("%s jsonData := ServicesMap[\"%s\"]\n", toWrite, funcType.Name.Name)
-	toWrite = fmt.Sprintf("%s mockedData := make([]%sStruct, 0)\n", toWrite, funcType.Name.Name)
-	toWrite = fmt.Sprintf("%s if err := json.Unmarshal([]byte(jsonData), mockedData.([]%sStruct)) ; err != nil {\nfmt.Println(\"Error unmarshalling input json data: func %s\")\n}\n", toWrite, funcType.Name.Name, funcType.Name.Name)
+	toWrite = fmt.Sprintf("%s jsonData := ServicesMap[\"%s\"].([]%sStruct)\n", toWrite, funcType.Name.Name, funcType.Name.Name)
 
 	for i := 0; i < len(returntypes); i++ {
 		toWrite = fmt.Sprintf("%s var return%d %s\n", toWrite, i, string(returntypes[i]))
 	}
 
-	toWrite = fmt.Sprintf("%s for i := 0; i < len(mockedData); i++ {\n elem := mockedData[i]\n inp := elem.Input\n outp := elem.Output\n", toWrite)
+	toWrite = fmt.Sprintf("%s for i := 0; i < len(jsonData); i++ {\n elem := jsonData[i]\n inp := elem.Input\n outp := elem.Output\n", toWrite)
 	result := ""
 
 	for i := 0; i < len(params); i++ {
