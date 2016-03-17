@@ -327,7 +327,7 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 	toWrite = fmt.Sprintf("%s if err := json.Unmarshal([]byte(jsonData), mockedData) ; err != nil {\nfmt.Println(\"Error unmarshalling input json data: func %s\")\n}\n", toWrite, funcType.Name.Name)
 
 	for i := 0; i < len(returntypes); i++ {
-		toWrite = fmt.Sprintf("%s var Return%d %s\n", toWrite, i, string(returntypes[i]))
+		toWrite = fmt.Sprintf("%s var return%d %s\n", toWrite, i, string(returntypes[i]))
 	}
 
 	toWrite = fmt.Sprintf("%s for i := 0; i < len(mockedData); i++ {\n elem := mockedData[i]\n inp := elem.Input\n outp := elem.Output\n", toWrite)
