@@ -151,9 +151,9 @@ func PreMockChecking(inputJsonPath, packagePath string) []FileInfo {
 func GenerateCodeForParsingJson(jsonPath, dirPath string) {
 
 	packageName := filepath.Base(dirPath)
-	tagName := fmt.Sprintf("// +build %smock\n", packageName)
-	toWrite := fmt.Sprintf("%s\npackage%s\nimport (\n\"fmt\"\n\"encoding/json\"\n\"io/ioutil\")\n", tagName, packageName)
-	toWrite = fmt.Sprintf("%svar ServicesMap = map[string]interface{}\n", toWrite)
+	tagName := fmt.Sprintf("// +build %smock\n\n", packageName)
+	toWrite := fmt.Sprintf("%s\npackage %s\n\nimport (\n\"fmt\"\n\"encoding/json\"\n\"io/ioutil\")\n", tagName, packageName)
+	toWrite = fmt.Sprintf("%svar ServicesMap = map[string]interface{}\n\n", toWrite)
 	toWrite = fmt.Sprintf("%sfunc init() {\nfile, err := ioutil.ReadFile(%s)\n", toWrite, jsonPath)
 	toWrite = fmt.Sprintf("%sif err!= nil {\nfmt.Println(\"func init: Error reading input json file\",err)\nos.Exit(1)\n}\n", toWrite)
 	toWrite = fmt.Sprintf("%serr = json.Unmarshal([]byte(file), &servicesMap)\n", toWrite)
