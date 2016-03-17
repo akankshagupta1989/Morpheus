@@ -402,13 +402,12 @@ func GenerateFunctionStruct(funcName string, params, returntypes []string) strin
 		param := strings.Split(params[i], " ")
 		param[0] = fmt.Sprintf("%s `json:\"%s\"'", strings.Title(param[0]), param[0])
 
-		toWrite = fmt.Sprintf("%s Input struct { \n %s \n} \n", toWrite, strings.Join(params, "\n"))
-
 		if string(param[1][0]) == "*" {
 			returnVarsInStruct = fmt.Sprintf("%s %s %s\n", returnVarsInStruct, param[0], param[1])
 		}
-
 	}
+
+	toWrite = fmt.Sprintf("%s Input struct { \n %s \n} \n", toWrite, strings.Join(params, "\n"))
 
 	if len(returntypes) > 0 {
 		toWrite = fmt.Sprintf("%s Output struct { \n %s }\n", toWrite, returnVarsInStruct)
