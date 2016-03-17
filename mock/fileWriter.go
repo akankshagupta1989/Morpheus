@@ -393,6 +393,7 @@ func GenerateFunctionStruct(funcName string, params, returntypes []string) strin
 		returnVarsInStruct = fmt.Sprintf("%s Return%d %s `json:\"Return%d\"`\n", returnVarsInStruct, i, returntypes[i], i)
 	}
 
+	inputVarsInStruct := ""
 	for i := 0; i < len(params); i++ {
 
 		param := strings.Split(params[i], " ")
