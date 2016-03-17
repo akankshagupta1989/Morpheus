@@ -396,15 +396,16 @@ func GenerateFunctionStruct(funcName string, params, returntypes []string) strin
 	for i := 0; i < len(params); i++ {
 
 		param := strings.Split(params[i], " ")
-		fmt.Println("param[0]before", param[0])
-		param[0] = fmt.Sprintf("%s `json:\"%s\"`", strings.Title(param[0]), param[0])
-		fmt.Println("param[0]after", param[0])
+
 		if string(param[1][0]) == "*" {
-			returnVarsInStruct = fmt.Sprintf("%s %s %s\n", returnVarsInStruct, param[0], param[1])
+			returnVarsInStruct = fmt.Sprintf("%s %s %s `json:\"%s\"`\n", returnVarsInStruct, strings.Title(param[0]), param[1], param[0])
 		}
+
+		inputVarsInStruct = fmt.Sprintf("%s %s %s `json:\"%s\"`\n", inputVarsInStruct, strings.Title(param[0]), param[1], param[0])
+
 	}
 
-	toWrite = fmt.Sprintf("%s Input struct { \n %s \n} \n", toWrite, strings.Join(params, "\n"))
+	toWrite = fmt.Sprintf("%s Input struct { \n %s \n} \n", toWrite, inputVarsInStruct)
 
 	if len(returntypes) > 0 {
 		toWrite = fmt.Sprintf("%s Output struct { \n %s }\n", toWrite, returnVarsInStruct)
