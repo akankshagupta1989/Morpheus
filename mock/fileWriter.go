@@ -302,9 +302,7 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 	for _, paramType := range paramTypes {
 		if strings.Contains(paramType, ".") {
 			imp := strings.Split(paramType, ".")
-			fmt.Println("before", imp[0])
 			str := stripSpecialCharsinPrefix(imp[0])
-			fmt.Println("after", str)
 			m.toImport[str] = 1
 		}
 	}
@@ -312,9 +310,7 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 	for _, returnType := range returntypes {
 		if strings.Contains(returnType, ".") {
 			imp := strings.Split(returnType, ".")
-			fmt.Println("before", imp[0])
 			str := stripSpecialCharsinPrefix(imp[0])
-			fmt.Println("after", str)
 			m.toImport[str] = 1
 		}
 	}
@@ -394,14 +390,15 @@ func GenerateFunctionStruct(funcName string, params, returntypes []string) strin
 
 	returnVarsInStruct := ""
 	for i := 0; i < len(returntypes); i++ {
-		returnVarsInStruct = fmt.Sprintf("%s return%d %s\n", returnVarsInStruct, i, returntypes[i])
+		returnVarsInStruct = fmt.Sprintf("%s Return%d %s `json:\"Return%d\"'\n", returnVarsInStruct, i, returntypes[i], i)
 	}
 
 	for i := 0; i < len(params); i++ {
 
 		param := strings.Split(params[i], " ")
+		fmt.Println("param[0]before", param[0])
 		param[0] = fmt.Sprintf("%s `json:\"%s\"'", strings.Title(param[0]), param[0])
-
+		fmt.Println("param[0]after", param[0])
 		if string(param[1][0]) == "*" {
 			returnVarsInStruct = fmt.Sprintf("%s %s %s\n", returnVarsInStruct, param[0], param[1])
 		}
