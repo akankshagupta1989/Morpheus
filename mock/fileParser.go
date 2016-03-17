@@ -147,6 +147,35 @@ func PreMockChecking(inputJsonPath, packagePath string) []FileInfo {
 
 }
 
+func GenerateCodeForParsingJson(jsonPath, dirPath string) {
+
+	packageName := filepath.Base(dirPath)
+	tagName := fmt.Sprintf("// +build %smock\n", packageName)
+	toWrite := fmt.Sprintf("%s\npackage%s\nimport (\n\"fmt\"\n)\n", tagName, packageName)
+	toWrite := fmt.Sprintf("%svar ServicesMap = map[string]interface{}\n", toWrite)
+	toWrite = fmt.Sprintf("%sfunc init() {\nfile, err := ioutil.ReadFile(%s)\n", toWrite, jsonPath)
+	toWrite = fmt.Sprintf("%sif err!= nil {\nfmt.Println(\"func init: Error reading input json file\",err)\nos.Exit(1)\n}\n", toWrite)
+	toWrite = fmt.Sprintf("%serr = json.Unmarshal([]byte(file), &servicesMap)\n", toWrite)
+	toWrite = fmt.Sprintf("%sif err != nil {\nfmt.Println(\"func init: Unmarshalling error, input json not in correct format\",err)\n os.Exit(1)\n}\n", toWrite)
+	toWrite = fmt.Sprintf("%s}", toWrite)
+
+	file, err := os.Create(fmt.Sprintf("%s/mock_init.go", filePath.Dir(dirPath)))
+
+	if err != nil {
+		fmt.Println("Error creating file: ", err)
+	}
+
+	_, err = io.WriteString(file, toWrite)
+
+	if err != nil {
+		fmt.Println("Error writing file: ", err)
+	}
+
+	file.Close()
+	runFmt(fileName)
+
+}
+
 func readLines(path string) ([]string, error) {
 	file, err := os.Open(path)
 	if err != nil {
