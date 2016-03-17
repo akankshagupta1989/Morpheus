@@ -390,14 +390,14 @@ func GenerateFunctionStruct(funcName string, params, returntypes []string) strin
 
 	returnVarsInStruct := ""
 	for i := 0; i < len(returntypes); i++ {
-		returnVarsInStruct = fmt.Sprintf("%s Return%d %s `json:\"Return%d\"'\n", returnVarsInStruct, i, returntypes[i], i)
+		returnVarsInStruct = fmt.Sprintf("%s Return%d %s `json:\"Return%d\"`\n", returnVarsInStruct, i, returntypes[i], i)
 	}
 
 	for i := 0; i < len(params); i++ {
 
 		param := strings.Split(params[i], " ")
 		fmt.Println("param[0]before", param[0])
-		param[0] = fmt.Sprintf("%s `json:\"%s\"'", strings.Title(param[0]), param[0])
+		param[0] = fmt.Sprintf("%s `json:\"%s\"`", strings.Title(param[0]), param[0])
 		fmt.Println("param[0]after", param[0])
 		if string(param[1][0]) == "*" {
 			returnVarsInStruct = fmt.Sprintf("%s %s %s\n", returnVarsInStruct, param[0], param[1])
