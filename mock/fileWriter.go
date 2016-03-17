@@ -324,10 +324,10 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 	toWrite = fmt.Sprintf("%s %s (%s) (%s) {\n", toWrite, funcType.Name.Name, parameters, returnTypes)
 	toWrite = fmt.Sprintf("%s jsonData := ServicesMap[\"%s\"]\n", toWrite, funcType.Name.Name)
 	toWrite = fmt.Sprintf("%s mockedData := make([]%sStruct, 0)\n", toWrite, funcType.Name.Name)
-	toWrite = fmt.Sprintf("%s if err := json.Unmarshal(jsonData, mockedData) ; err != nil {\nfmt.Println(\"Error unmarshalling input json data: func %s\")\n}\n", toWrite, funcType.Name.Name)
+	toWrite = fmt.Sprintf("%s if err := json.Unmarshal([]byte(jsonData), mockedData) ; err != nil {\nfmt.Println(\"Error unmarshalling input json data: func %s\")\n}\n", toWrite, funcType.Name.Name)
 
 	for i := 0; i < len(returntypes); i++ {
-		toWrite = fmt.Sprintf("%s var return%d %s\n", toWrite, i, string(returntypes[i]))
+		toWrite = fmt.Sprintf("%s var Return%d %s\n", toWrite, i, string(returntypes[i]))
 	}
 
 	toWrite = fmt.Sprintf("%s for i := 0; i < len(mockedData); i++ {\n elem := mockedData[i]\n inp := elem.Input\n outp := elem.Output\n", toWrite)
@@ -340,7 +340,7 @@ func (m *MockedObject) GenerateFuncCode(funcType *ast.FuncDecl) {
 		param := strings.Split(params[i], " ")
 		_, isBuiltin := builtinTypes[param[1]]
 		if isBuiltin {
-			result = fmt.Sprintf("%s (%s == inp.%s)", result, param[0], param[0])
+			result = fmt.Sprintf("%s (%s == inp.%s)", result, param[0], strings.Title(param[0]))
 		} else {
 			result = fmt.Sprintf("%s reflect.DeepEqual(%s,inp.%s)", result, param[0], param[0])
 			m.reflectNum++
