@@ -236,7 +236,7 @@ func WriteExportedContent(f FileInfo) {
 
 func (m *MockedObject) GenerateImportCode(importArr [][]string) {
 
-	toWrite := fmt.Sprintf("import ( \n \"fmt\"\n\"encoding/json\"\n")
+	toWrite := fmt.Sprintf("import (\n")
 	if m.reflectNum > 0 {
 		toWrite = fmt.Sprintf("%s \"reflect\"\n", toWrite)
 	}
